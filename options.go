@@ -2,9 +2,8 @@ package lambda
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
-
-	"github.com/aws/aws-lambda-go/events"
 )
 
 // Resource is an interface that represents a resource that can be started and stopped.
@@ -16,7 +15,7 @@ type Resource interface {
 
 type options struct {
 	resources    []Resource
-	errorHandler func(error) (events.APIGatewayProxyResponse, error)
+	errorHandler func(error) (APIGatewayProxyResponse, error)
 }
 
 func defaultOpts() options {
@@ -36,15 +35,23 @@ func WithResources(r ...Resource) Option {
 }
 
 // WithErrorHandler is an option that allows you to pass a custom error handler to the lambda function.
-func WithErrorHandler(h func(error) (events.APIGatewayProxyResponse, error)) Option {
+func WithErrorHandler(h func(error) (APIGatewayProxyResponse, error)) Option {
 	return func(o *options) {
 		o.errorHandler = h
 	}
 }
 
-var DefaultErrorHandler = func(err error) (events.APIGatewayProxyResponse, error) {
-	return events.APIGatewayProxyResponse{
+var DefaultErrorHandler = func(err error) (APIGatewayProxyResponse, error) {
+	e, mErr := json.Marshal(err.Error())
+	if mErr != nil {
+		return APIGatewayProxyResponse{
+			StatusCode: http.StatusInternalServerError,
+			Body:       []byte(`"failed to marshal error"`),
+		}, mErr
+
+	}
+	return APIGatewayProxyResponse{
 		StatusCode: http.StatusInternalServerError,
-		Body:       err.Error(),
+		Body:       e,
 	}, nil
 }
