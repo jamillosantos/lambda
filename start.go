@@ -41,6 +41,7 @@ func Start[Req any, Resp any](handler func(*Context[Req, Resp]) error, opts ...O
 			Response: Response[Resp]{
 				status: http.StatusOK,
 			},
+			Locals: make(map[string]any),
 		}
 
 		// For the string -> []byte we need to use a more effective way. For now, let's keep the naive approach.
