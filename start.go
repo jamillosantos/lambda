@@ -27,6 +27,8 @@ func Start[Req any, Resp any](handler func(context.Context, *Context[Req, Resp])
 			Request: Request[Req]{
 				req:        &gatewayReq,
 				HTTPMethod: gatewayReq.HTTPMethod,
+				Path:       gatewayReq.Path,
+				PathParams: gatewayReq.PathParameters,
 				Query: Query{
 					mapUtils:      gatewayReq.QueryStringParameters,
 					mapArrayUtils: gatewayReq.MultiValueQueryStringParameters,
