@@ -12,10 +12,12 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
+type Handler[Req any, Resp any] func(*Context[Req, Resp]) error
+
 // Start will start the lambda function with the given handler and options.
 //
 // The handler is a function that receives a context and a pointer to a Context.
-func Start[Req any, Resp any](handler func(*Context[Req, Resp]) error, opts ...Option) {
+func Start[Req any, Resp any](handler Handler[Req, Resp], opts ...Option) {
 	c := defaultOpts()
 	for _, o := range opts {
 		o(&c)
@@ -39,8 +41,8 @@ func Start[Req any, Resp any](handler func(*Context[Req, Resp]) error, opts ...O
 				},
 			},
 			Response: Response[Resp]{
-				status: http.StatusOK,
-				header: make(map[string][]string),
+				StatusCode: http.StatusOK,
+				Headers:    make(map[string][]string),
 			},
 			Locals: make(map[string]any),
 		}
@@ -55,14 +57,14 @@ func Start[Req any, Resp any](handler func(*Context[Req, Resp]) error, opts ...O
 		if !(errors.Is(err, &lambdaContext.Response)) && err != nil {
 			lambdaContext.error = err
 		}
-		if lambdaContext.Response.err != nil {
-			return c.errorHandler(lambdaContext.Response.err)
+		if lambdaContext.Response.Err != nil {
+			return c.errorHandler(lambdaContext.Response.Err)
 		}
 
 		r := APIGatewayProxyResponse{
-			StatusCode:        lambdaContext.Response.status,
-			MultiValueHeaders: lambdaContext.Response.header,
-			Body:              lambdaContext.Response.body.Bytes(),
+			StatusCode:        lambdaContext.Response.StatusCode,
+			MultiValueHeaders: lambdaContext.Response.Headers,
+			Body:              lambdaContext.Response.Body.Bytes(),
 		}
 		return r, nil
 	})
