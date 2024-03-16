@@ -10,45 +10,6 @@ var (
 	ErrKeyNotFound = errors.New("key not found")
 )
 
-type mapUtils map[string]string
-
-func (m mapUtils) String(key string) (string, bool) {
-	value, ok := m[key]
-	return value, ok
-}
-
-func (m mapUtils) Int(key string) (int, error) {
-	value, ok := m[key]
-	if !ok {
-		return 0, fmt.Errorf("%w: %s", ErrKeyNotFound, key)
-	}
-	return strconv.Atoi(value)
-}
-
-func (m mapUtils) Int64(key string) (int64, error) {
-	value, ok := m[key]
-	if !ok {
-		return 0, fmt.Errorf("%w: %s", ErrKeyNotFound, key)
-	}
-	return strconv.ParseInt(value, 10, 64)
-}
-
-func (m mapUtils) Float64(key string) (float64, error) {
-	value, ok := m[key]
-	if !ok {
-		return 0, fmt.Errorf("%w: %s", ErrKeyNotFound, key)
-	}
-	return strconv.ParseFloat(value, 64)
-}
-
-func (m mapUtils) Bool(key string) (bool, error) {
-	value, ok := m[key]
-	if !ok {
-		return false, fmt.Errorf("%w: %s", ErrKeyNotFound, key)
-	}
-	return strconv.ParseBool(value)
-}
-
 type mapArrayUtils map[string][]string
 
 func (m mapArrayUtils) Strings(key string) ([]string, error) {
@@ -57,6 +18,25 @@ func (m mapArrayUtils) Strings(key string) ([]string, error) {
 		return nil, fmt.Errorf("%w: %s", ErrKeyNotFound, key)
 	}
 	return value, nil
+}
+
+func (m mapArrayUtils) String(key string) (string, bool) {
+	value, ok := m[key]
+	if !ok {
+		return "", false
+	}
+	if len(value) == 0 {
+		return "", false
+	}
+	return value[len(value)-1], true
+}
+
+func (m mapArrayUtils) StringDefault(key, def string) string {
+	value, ok := m.String(key)
+	if !ok {
+		return def
+	}
+	return value
 }
 
 func (m mapArrayUtils) Ints(key string) ([]int, error) {
@@ -75,6 +55,29 @@ func (m mapArrayUtils) Ints(key string) ([]int, error) {
 	return result, nil
 }
 
+func (m mapArrayUtils) Int(key string) (int, error) {
+	value, ok := m[key]
+	if !ok {
+		return 0, fmt.Errorf("%w: %s", ErrKeyNotFound, key)
+	}
+	if len(value) == 0 {
+		return 0, fmt.Errorf("%w: %s", ErrKeyNotFound, key)
+	}
+	result, err := strconv.Atoi(value[len(value)-1])
+	if err != nil {
+		return 0, fmt.Errorf("failed to parse %s: %w", key, err)
+	}
+	return result, nil
+}
+
+func (m mapArrayUtils) IntDefault(key string, def int) int {
+	value, err := m.Int(key)
+	if err != nil {
+		return def
+	}
+	return value
+}
+
 func (m mapArrayUtils) Int64s(key string) ([]int64, error) {
 	value, ok := m[key]
 	if !ok {
@@ -89,6 +92,29 @@ func (m mapArrayUtils) Int64s(key string) ([]int64, error) {
 		}
 	}
 	return result, nil
+}
+
+func (m mapArrayUtils) Int64(key string) (int64, error) {
+	value, ok := m[key]
+	if !ok {
+		return 0, fmt.Errorf("%w: %s", ErrKeyNotFound, key)
+	}
+	if len(value) == 0 {
+		return 0, fmt.Errorf("%w: %s", ErrKeyNotFound, key)
+	}
+	result, err := strconv.ParseInt(value[len(value)-1], 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf("failed to parse %s: %w", key, err)
+	}
+	return result, nil
+}
+
+func (m mapArrayUtils) Int64Default(key string, def int64) int64 {
+	value, err := m.Int64(key)
+	if err != nil {
+		return def
+	}
+	return value
 }
 
 func (m mapArrayUtils) Float64s(key string) ([]float64, error) {
@@ -107,6 +133,29 @@ func (m mapArrayUtils) Float64s(key string) ([]float64, error) {
 	return result, nil
 }
 
+func (m mapArrayUtils) Float64(key string) (float64, error) {
+	value, ok := m[key]
+	if !ok {
+		return 0, fmt.Errorf("%w: %s", ErrKeyNotFound, key)
+	}
+	if len(value) == 0 {
+		return 0, fmt.Errorf("%w: %s", ErrKeyNotFound, key)
+	}
+	result, err := strconv.ParseFloat(value[len(value)-1], 64)
+	if err != nil {
+		return 0, fmt.Errorf("failed to parse %s: %w", key, err)
+	}
+	return result, nil
+}
+
+func (m mapArrayUtils) Float64Default(key string, def float64) float64 {
+	value, err := m.Float64(key)
+	if err != nil {
+		return def
+	}
+	return value
+}
+
 func (m mapArrayUtils) Bools(key string) ([]bool, error) {
 	value, ok := m[key]
 	if !ok {
@@ -123,7 +172,25 @@ func (m mapArrayUtils) Bools(key string) ([]bool, error) {
 	return result, nil
 }
 
-type multiValues struct {
-	mapUtils
-	mapArrayUtils
+func (m mapArrayUtils) Bool(key string) (bool, error) {
+	value, ok := m[key]
+	if !ok {
+		return false, fmt.Errorf("%w: %s", ErrKeyNotFound, key)
+	}
+	if len(value) == 0 {
+		return false, fmt.Errorf("%w: %s", ErrKeyNotFound, key)
+	}
+	result, err := strconv.ParseBool(value[len(value)-1])
+	if err != nil {
+		return false, fmt.Errorf("failed to parse %s: %w", key, err)
+	}
+	return result, nil
+}
+
+func (m mapArrayUtils) BoolDefault(key string, def bool) bool {
+	value, err := m.Bool(key)
+	if err != nil {
+		return def
+	}
+	return value
 }
