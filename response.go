@@ -3,6 +3,7 @@ package lambda
 import (
 	"bytes"
 	"encoding/json"
+	"net/http"
 )
 
 type Response[T any] struct {
@@ -12,9 +13,14 @@ type Response[T any] struct {
 	Err        error
 }
 
-func (r *Response[T]) Redirect(url string, status int) {
-	r.StatusCode = status
+func (r *Response[T]) Redirect(url string, status ...int) *Response[T] {
+	st := http.StatusTemporaryRedirect
+	if len(status) > 0 {
+		st = status[0]
+	}
+	r.StatusCode = st
 	r.Headers["Location"] = []string{url}
+	return r
 }
 
 func (r *Response[T]) Status(status int) *Response[T] {

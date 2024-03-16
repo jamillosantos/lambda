@@ -41,8 +41,8 @@ func Run[Req any, Resp any](handler lambda.Handler[Req, Resp], opts ...Option) (
 				HTTPMethod: o.httpMethod,
 				Path:       o.path,
 				PathParams: o.pathParams,
-				Query:      lambda.NewQuery(make(map[string]string), o.query),
-				Headers:    lambda.NewHeaders(make(map[string]string), o.headers),
+				Query:      lambda.Query(o.query),
+				Headers:    lambda.Headers(o.headers),
 				Body:       o.req.(Req),
 			},
 			Response: lambda.Response[Resp]{
