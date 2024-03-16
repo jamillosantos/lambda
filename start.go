@@ -31,14 +31,8 @@ func Start[Req any, Resp any](handler Handler[Req, Resp], opts ...Option) {
 				HTTPMethod: gatewayReq.HTTPMethod,
 				Path:       gatewayReq.Path,
 				PathParams: gatewayReq.PathParameters,
-				Query: Query{
-					mapUtils:      gatewayReq.QueryStringParameters,
-					mapArrayUtils: gatewayReq.MultiValueQueryStringParameters,
-				},
-				Headers: Headers{
-					mapUtils:      gatewayReq.Headers,
-					mapArrayUtils: gatewayReq.MultiValueHeaders,
-				},
+				Query:      Query(gatewayReq.MultiValueQueryStringParameters),
+				Headers:    Headers(gatewayReq.MultiValueHeaders),
 			},
 			Response: Response[Resp]{
 				StatusCode: http.StatusOK,
