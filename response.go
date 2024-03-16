@@ -24,9 +24,6 @@ func (r *Response[T]) Status(status int) *Response[T] {
 }
 
 func (r *Response[T]) Header(key string, value string) *Response[T] {
-	if r.header == nil {
-		r.header = make(map[string][]string)
-	}
 	h, ok := r.header[key]
 	if !ok {
 		r.header[key] = []string{value}

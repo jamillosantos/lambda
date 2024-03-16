@@ -40,6 +40,7 @@ func Start[Req any, Resp any](handler func(*Context[Req, Resp]) error, opts ...O
 			},
 			Response: Response[Resp]{
 				status: http.StatusOK,
+				header: make(map[string][]string),
 			},
 			Locals: make(map[string]any),
 		}
