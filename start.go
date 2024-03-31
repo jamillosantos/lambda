@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -21,6 +22,13 @@ func Start[Req any, Resp any](handler Handler[Req, Resp], opts ...Option) {
 	c := defaultOpts()
 	for _, o := range opts {
 		o(&c)
+	}
+
+	startCtx := context.Background()
+	for _, r := range c.resources {
+		if err := r.Start(startCtx); err != nil {
+			panic(fmt.Errorf("failed to start resource %s: %w", r.Name(), err))
+		}
 	}
 
 	lambda.Start(func(ctx context.Context, gatewayReq APIGatewayProxyRequest) (APIGatewayProxyResponse, error) {
