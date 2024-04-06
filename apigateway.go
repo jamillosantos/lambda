@@ -28,5 +28,4 @@ type APIGatewayProxyResponse struct {
 	Headers           map[string]string   `json:"headers"`
 	MultiValueHeaders map[string][]string `json:"multiValueHeaders"`
 	Body              json.RawMessage     `json:"body"`
-	isBase64Encoded   bool                `json:"isBase64Encoded,omitempty"`
 }
