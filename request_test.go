@@ -105,3 +105,70 @@ func TestPathParams_Int64(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
+
+func TestRequest_Cookie(t *testing.T) {
+	type testCase struct {
+		name      string
+		cookies   []string
+		key       string
+		wantValue string
+		wantOk    bool
+	}
+	tests := []testCase{
+		{
+			name:      "should return the cookie value when it exists",
+			cookies:   []string{"key=value"},
+			key:       "key",
+			wantValue: "value",
+			wantOk:    true,
+		},
+		{
+			name:    "should return the cookie value when it exists",
+			cookies: []string{"key=value"},
+			key:     "non-existing-key",
+			wantOk:  false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := &Request[None]{
+				Headers: Headers{
+					"Cookie": tt.cookies,
+				},
+			}
+			gotCookieValue, ok := r.Cookie(tt.key)
+			assert.Equal(t, tt.wantOk, ok)
+			assert.Equal(t, tt.wantValue, gotCookieValue)
+		})
+	}
+}
+
+func TestRequest_parseCookies(t *testing.T) {
+	r := &Request[None]{
+		Headers: Headers{
+			"Cookie": []string{
+				`key=value; key2="value2"; key3; key4=value 4`,
+				`key5; key6="value6"`,
+			},
+		},
+	}
+	r.parseCookies()
+
+	assert.Len(t, r.cookies, 4)
+
+	assert.Contains(t, r.cookies, "key")
+	assert.Contains(t, r.cookies["key"], "value")
+
+	assert.Contains(t, r.cookies, "key2")
+	assert.Contains(t, r.cookies["key2"], "value2")
+
+	assert.NotContains(t, r.cookies, "key3")
+
+	assert.Contains(t, r.cookies, "key4")
+	assert.Contains(t, r.cookies["key4"], "value 4")
+
+	assert.NotContains(t, r.cookies, "key5")
+
+	assert.Contains(t, r.cookies, "key6")
+	assert.Contains(t, r.cookies["key6"], "value6")
+}
