@@ -11,7 +11,6 @@ import (
 type Resource interface {
 	Name() string
 	Start(context.Context) error
-	Stop(context.Context) error
 }
 
 type options struct {

@@ -37,7 +37,7 @@ func Run[Req any, Resp any](handler lambda.Handler[Req, Resp], opts ...Option) (
 	ctx := &TestContext[Req, Resp]{
 		lambda.Context[Req, Resp]{
 			Context: context.Background(),
-			Request: lambda.Request[Req]{
+			Request: &lambda.Request[Req]{
 				HTTPMethod: o.httpMethod,
 				Path:       o.path,
 				PathParams: o.pathParams,
@@ -45,7 +45,7 @@ func Run[Req any, Resp any](handler lambda.Handler[Req, Resp], opts ...Option) (
 				Headers:    lambda.Headers(o.headers),
 				Body:       o.req.(Req),
 			},
-			Response: lambda.Response[Resp]{
+			Response: &lambda.Response[Resp]{
 				StatusCode: http.StatusOK,
 				Headers:    make(map[string][]string),
 			},
@@ -53,7 +53,7 @@ func Run[Req any, Resp any](handler lambda.Handler[Req, Resp], opts ...Option) (
 		},
 	}
 	err := handler(&ctx.Context)
-	if err == &ctx.Response { // nolint
+	if err == ctx.Response { // nolint
 		if ctx.Response.Err != nil {
 			return nil, ctx.Response.Err
 		}
