@@ -21,8 +21,9 @@ type Request[T any] struct {
 	Body       T
 }
 
-func (p PathParams) String(key string) string {
-	return p[key]
+func (p PathParams) String(key string) (string, bool) {
+	v, ok := p[key]
+	return v, ok
 }
 
 func (p PathParams) Int(key string) (int, error) {

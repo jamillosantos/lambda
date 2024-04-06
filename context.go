@@ -9,8 +9,8 @@ type None struct{}
 
 type Context[Req any, Resp any] struct {
 	Context  context.Context
-	Request  Request[Req]
-	Response Response[Resp]
+	Request  *Request[Req]
+	Response *Response[Resp]
 	Locals   map[string]any
 	error    error
 }

@@ -32,21 +32,24 @@ func Start[Req any, Resp any](handler Handler[Req, Resp], opts ...Option) {
 	}
 
 	lambda.Start(func(ctx context.Context, gatewayReq APIGatewayProxyRequest) (APIGatewayProxyResponse, error) {
+		req := Request[Req]{
+			req:        &gatewayReq,
+			HTTPMethod: gatewayReq.HTTPMethod,
+			Path:       gatewayReq.Path,
+			PathParams: gatewayReq.PathParameters,
+			Query:      Query(gatewayReq.MultiValueQueryStringParameters),
+			Headers:    Headers(gatewayReq.MultiValueHeaders),
+		}
+		resp := Response[Resp]{
+			StatusCode: http.StatusOK,
+			Headers:    make(map[string][]string),
+		}
+
 		lambdaContext := Context[Req, Resp]{
-			Context: ctx,
-			Request: Request[Req]{
-				req:        &gatewayReq,
-				HTTPMethod: gatewayReq.HTTPMethod,
-				Path:       gatewayReq.Path,
-				PathParams: gatewayReq.PathParameters,
-				Query:      Query(gatewayReq.MultiValueQueryStringParameters),
-				Headers:    Headers(gatewayReq.MultiValueHeaders),
-			},
-			Response: Response[Resp]{
-				StatusCode: http.StatusOK,
-				Headers:    make(map[string][]string),
-			},
-			Locals: make(map[string]any),
+			Context:  ctx,
+			Request:  &req,
+			Response: &resp,
+			Locals:   make(map[string]any),
 		}
 
 		// For the string -> []byte we need to use a more effective way. For now, let's keep the naive approach.
@@ -56,7 +59,7 @@ func Start[Req any, Resp any](handler Handler[Req, Resp], opts ...Option) {
 		}
 
 		err = handler(&lambdaContext)
-		if !(errors.Is(err, &lambdaContext.Response)) && err != nil {
+		if !(errors.Is(err, lambdaContext.Response)) && err != nil {
 			lambdaContext.error = err
 		}
 		if lambdaContext.Response.Err != nil {
