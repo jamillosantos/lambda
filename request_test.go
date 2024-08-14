@@ -132,9 +132,7 @@ func TestRequest_Cookie(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := &Request[None]{
-				Headers: Headers{
-					"Cookie": tt.cookies,
-				},
+				rawCookies: tt.cookies,
 			}
 			gotCookieValue, ok := r.Cookie(tt.key)
 			assert.Equal(t, tt.wantOk, ok)
@@ -145,11 +143,9 @@ func TestRequest_Cookie(t *testing.T) {
 
 func TestRequest_parseCookies(t *testing.T) {
 	r := &Request[None]{
-		Headers: Headers{
-			"Cookie": []string{
-				`key=value; key2="value2"; key3; key4=value 4`,
-				`key5; key6="value6"`,
-			},
+		rawCookies: []string{
+			`key=value; key2="value2"; key3; key4=value 4`,
+			`key5; key6="value6"`,
 		},
 	}
 	r.parseCookies()

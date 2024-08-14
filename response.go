@@ -6,12 +6,14 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
 type Response[T any] struct {
 	StatusCode int
-	Headers    map[string][]string
+	Headers    map[string]string
+	Cookies    []Cookie
 	Body       bytes.Buffer
 	Err        error
 }
@@ -22,7 +24,7 @@ func (r *Response[T]) Redirect(url string, status ...int) *Response[T] {
 		st = status[0]
 	}
 	r.StatusCode = st
-	r.Headers["Location"] = []string{url}
+	r.Headers["Location"] = url
 	return r
 }
 
@@ -32,17 +34,12 @@ func (r *Response[T]) Status(status int) *Response[T] {
 }
 
 func (r *Response[T]) Header(key string, value string) *Response[T] {
-	h, ok := r.Headers[key]
-	if !ok {
-		r.Headers[key] = []string{value}
-		return r
-	}
-	r.Headers[key] = append(h, value)
+	r.Headers[key] = value
 	return r
 }
 
 func (r *Response[T]) JSON(data any) *Response[T] {
-	r.Headers["Content-Type"] = []string{"application/json"}
+	r.Headers["Content-Type"] = "application/json"
 	if r.Body.Len() > 0 {
 		r.Body.Reset()
 	}
@@ -95,7 +92,25 @@ type Cookie struct {
 }
 
 func (r *Response[T]) SetCookie(c Cookie) *Response[T] {
-	sb := strings.Builder{}
+	if r.Cookies == nil {
+		r.Cookies = make([]Cookie, 0)
+	}
+	r.Cookies = append(r.Cookies, c)
+	return r
+}
+
+var (
+	sbPool = sync.Pool{
+		New: func() any {
+			return &strings.Builder{}
+		},
+	}
+)
+
+func (c *Cookie) String() string {
+	sb := sbPool.Get().(*strings.Builder)
+	sb.Reset()
+	defer sbPool.Put(sb)
 	sb.WriteString(c.Name)
 	sb.WriteString("=")
 	sb.WriteString(c.Value)
@@ -128,12 +143,7 @@ func (r *Response[T]) SetCookie(c Cookie) *Response[T] {
 		sb.WriteString("; SameSite=")
 		sb.WriteString(string(c.SameSite))
 	}
-	cookies, ok := r.Headers["Set-Cookie"]
-	if !ok {
-		cookies = make([]string, 0, 1)
-	}
-	r.Headers["Set-Cookie"] = append(cookies, sb.String())
-	return r
+	return sb.String()
 }
 
 var unsetCookieDate = time.Date(2010, 1, 1, 0, 0, 0, 0, time.UTC)

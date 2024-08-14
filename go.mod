@@ -3,7 +3,7 @@ module github.com/jamillosantos/lambda
 go 1.22.0
 
 require (
-	github.com/aws/aws-lambda-go v1.46.0
+	github.com/aws/aws-lambda-go v1.47.0
 	github.com/stretchr/testify v1.7.2
 )
 

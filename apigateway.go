@@ -24,8 +24,7 @@ type APIGatewayProxyRequest struct {
 
 // APIGatewayProxyResponse configures the response to be returned by API Gateway for the request
 type APIGatewayProxyResponse struct {
-	StatusCode        int                 `json:"statusCode"`
-	Headers           map[string]string   `json:"headers"`
-	MultiValueHeaders map[string][]string `json:"multiValueHeaders"`
-	Body              json.RawMessage     `json:"body"`
+	StatusCode int               `json:"statusCode"`
+	Headers    map[string]string `json:"headers"`
+	Body       json.RawMessage   `json:"body"`
 }

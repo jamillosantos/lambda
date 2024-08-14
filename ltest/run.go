@@ -26,8 +26,8 @@ func Run[Req any, Resp any](handler lambda.Handler[Req, Resp], opts ...Option) (
 		httpMethod: "GET",
 		path:       "/",
 		pathParams: make(map[string]string),
-		query:      make(map[string][]string),
-		headers:    make(map[string][]string),
+		query:      make(map[string]string),
+		headers:    make(map[string]string),
 	}
 	var req Req
 	o.req = req
@@ -47,7 +47,7 @@ func Run[Req any, Resp any](handler lambda.Handler[Req, Resp], opts ...Option) (
 			},
 			Response: &lambda.Response[Resp]{
 				StatusCode: http.StatusOK,
-				Headers:    make(map[string][]string),
+				Headers:    make(map[string]string),
 			},
 			Locals: o.locals,
 		},
