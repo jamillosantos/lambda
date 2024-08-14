@@ -7,19 +7,19 @@ import (
 	"sync"
 )
 
-type Query = mapArrayUtils
+type Query = mapUtils
 
-type Headers = mapArrayUtils
+type Headers = mapUtils
 
 type PathParams map[string]string
 
 type Request[T any] struct {
-	req        *APIGatewayProxyRequest
 	HTTPMethod string
 	Path       string
 	PathParams PathParams
 	Query      Query
 	Headers    Headers
+	rawCookies []string
 	Body       T
 
 	parseCookiesOnce sync.Once
@@ -73,13 +73,12 @@ func (r *Request[T]) Cookie(key string) (string, bool) {
 
 func (r *Request[T]) parseCookies() {
 	// Cookie: name=value; name2=value2; name3=value3
-	cookiesArr, ok := r.Headers["Cookie"]
-	if !ok {
-		return
-	}
-	r.cookies = make(map[string]string, len(cookiesArr))
-	var cookie string
-	for _, cookiesH := range cookiesArr {
+	r.cookies = make(map[string]string, len(r.rawCookies))
+	var (
+		cookie string
+		ok     bool
+	)
+	for _, cookiesH := range r.rawCookies {
 		for {
 			cookie, cookiesH, ok = strings.Cut(cookiesH, ";")
 			if !ok && len(cookie) == 0 {

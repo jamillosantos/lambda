@@ -10,8 +10,8 @@ import (
 
 func TestWithErrorHandler(t *testing.T) {
 	o := options{}
-	h := func(err error) (APIGatewayProxyResponse, error) {
-		return APIGatewayProxyResponse{}, nil
+	h := func(err error) (HTTPResponse, error) {
+		return HTTPResponse{}, nil
 	}
 	WithErrorHandler(h)(&o)
 	assert.Equal(t, fmt.Sprintf("%p", h), fmt.Sprintf("%p", o.errorHandler))

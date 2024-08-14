@@ -13,9 +13,15 @@ type Resource interface {
 	Start(context.Context) error
 }
 
+type HTTPResponse struct {
+	StatusCode int
+	Headers    map[string]string
+	Body       json.RawMessage
+}
+
 type options struct {
 	resources    []Resource
-	errorHandler func(error) (APIGatewayProxyResponse, error)
+	errorHandler func(error) (HTTPResponse, error)
 }
 
 func defaultOpts() options {
@@ -35,22 +41,22 @@ func WithResources(r ...Resource) Option {
 }
 
 // WithErrorHandler is an option that allows you to pass a custom error handler to the lambda function.
-func WithErrorHandler(h func(error) (APIGatewayProxyResponse, error)) Option {
+func WithErrorHandler(h func(error) (HTTPResponse, error)) Option {
 	return func(o *options) {
 		o.errorHandler = h
 	}
 }
 
-var DefaultErrorHandler = func(err error) (APIGatewayProxyResponse, error) {
+var DefaultErrorHandler = func(err error) (HTTPResponse, error) {
 	e, mErr := json.Marshal(err.Error())
 	if mErr != nil {
-		return APIGatewayProxyResponse{
+		return HTTPResponse{
 			StatusCode: http.StatusInternalServerError,
 			Body:       []byte(`"failed to marshal error"`),
 		}, mErr
 
 	}
-	return APIGatewayProxyResponse{
+	return HTTPResponse{
 		StatusCode: http.StatusInternalServerError,
 		Body:       e,
 	}, nil
