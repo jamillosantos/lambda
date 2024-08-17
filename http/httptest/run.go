@@ -1,18 +1,18 @@
-package ltest
+package httptest
 
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	lambdahttp "github.com/jamillosantos/lambda/http"
 	"net/http"
-
-	"github.com/jamillosantos/lambda"
 )
 
-type TestContext[Req any, Resp any] struct {
-	lambda.Context[Req, Resp]
+type TestHttpContext[Req any, Resp any] struct {
+	lambdahttp.Context[Req, Resp]
 }
 
-func (t *TestContext[Req, Resp]) ResponseBody() (Resp, error) {
+func (t *TestHttpContext[Req, Resp]) ResponseBody() (Resp, error) {
 	var r Resp
 	err := json.NewDecoder(&t.Response.Body).Decode(&r)
 	if err != nil {
@@ -21,7 +21,7 @@ func (t *TestContext[Req, Resp]) ResponseBody() (Resp, error) {
 	return r, nil
 }
 
-func Run[Req any, Resp any](handler lambda.Handler[Req, Resp], opts ...Option) (*TestContext[Req, Resp], error) {
+func Run[Req any, Resp any](handler lambdahttp.Handler[Req, Resp], opts ...Option) (*TestHttpContext[Req, Resp], error) {
 	o := options{
 		httpMethod: "GET",
 		path:       "/",
@@ -34,18 +34,18 @@ func Run[Req any, Resp any](handler lambda.Handler[Req, Resp], opts ...Option) (
 	for _, opt := range opts {
 		opt(&o)
 	}
-	ctx := &TestContext[Req, Resp]{
-		lambda.Context[Req, Resp]{
+	ctx := &TestHttpContext[Req, Resp]{
+		lambdahttp.Context[Req, Resp]{
 			Context: context.Background(),
-			Request: &lambda.Request[Req]{
+			Request: &lambdahttp.Request[Req]{
 				HTTPMethod: o.httpMethod,
 				Path:       o.path,
 				PathParams: o.pathParams,
-				Query:      lambda.Query(o.query),
-				Headers:    lambda.Headers(o.headers),
+				Query:      lambdahttp.Query(o.query),
+				Headers:    lambdahttp.Headers(o.headers),
 				Body:       o.req.(Req),
 			},
-			Response: &lambda.Response[Resp]{
+			Response: &lambdahttp.Response[Resp]{
 				StatusCode: http.StatusOK,
 				Headers:    make(map[string]string),
 			},
@@ -53,7 +53,7 @@ func Run[Req any, Resp any](handler lambda.Handler[Req, Resp], opts ...Option) (
 		},
 	}
 	err := handler(&ctx.Context)
-	if err == ctx.Response { // nolint
+	if errors.Is(err, ctx.Response) { // nolint
 		if ctx.Response.Err != nil {
 			return nil, ctx.Response.Err
 		}

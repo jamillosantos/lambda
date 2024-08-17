@@ -1,4 +1,4 @@
-package lambda
+package http
 
 import (
 	"context"
@@ -18,7 +18,7 @@ type Handler[Req any, Resp any] func(*Context[Req, Resp]) error
 // StartV1 will start the lambda function with the given handler and options.
 //
 // The handler is a function that receives a context and a pointer to a Context.
-func StartV1[Req any, Resp any](handler Handler[Req, Resp], opts ...Option) {
+func StartV1[Req any, Resp any](handler Handler[Req, Resp], opts ...HttpOption) {
 	c := defaultOpts()
 	for _, o := range opts {
 		o(&c)
@@ -77,7 +77,7 @@ func StartV1[Req any, Resp any](handler Handler[Req, Resp], opts ...Option) {
 	})
 }
 
-func toV1Response(response HTTPResponse, err error) (APIGatewayProxyResponse, error) {
+func toV1Response(response HttpResponse, err error) (APIGatewayProxyResponse, error) {
 	if err != nil {
 		return APIGatewayProxyResponse{}, err
 	}

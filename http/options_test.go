@@ -1,4 +1,4 @@
-package lambda
+package http
 
 import (
 	"context"
@@ -10,8 +10,8 @@ import (
 
 func TestWithErrorHandler(t *testing.T) {
 	o := options{}
-	h := func(err error) (HTTPResponse, error) {
-		return HTTPResponse{}, nil
+	h := func(err error) (HttpResponse, error) {
+		return HttpResponse{}, nil
 	}
 	WithErrorHandler(h)(&o)
 	assert.Equal(t, fmt.Sprintf("%p", h), fmt.Sprintf("%p", o.errorHandler))

@@ -1,10 +1,12 @@
-package lambda
+package http
 
 import (
 	"encoding/json"
 
 	"github.com/aws/aws-lambda-go/events"
 )
+
+type None struct{}
 
 // APIGatewayProxyRequest contains data coming from the API Gateway proxy
 type APIGatewayProxyRequest struct {

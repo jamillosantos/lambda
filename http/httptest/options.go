@@ -1,6 +1,9 @@
-package ltest
+package httptest
+
+import "context"
 
 type options struct {
+	ctx        context.Context
 	httpMethod string
 	path       string
 	pathParams map[string]string
@@ -12,7 +15,13 @@ type options struct {
 
 type Option func(*options)
 
-func WithHTTPMethod(method string) Option {
+func WithContext(ctx context.Context) Option {
+	return func(o *options) {
+		o.ctx = ctx
+	}
+}
+
+func WithHttpMethod(method string) Option {
 	return func(o *options) {
 		o.httpMethod = method
 	}

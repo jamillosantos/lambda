@@ -1,63 +1,29 @@
 package lambda
 
-import (
-	"context"
-	"encoding/json"
-	"net/http"
-)
-
-// Resource is an interface that represents a resource that can be started and stopped.
-// Example: A connection to the database or message broker, etc;
-type Resource interface {
-	Name() string
-	Start(context.Context) error
-}
-
-type HTTPResponse struct {
-	StatusCode int
-	Headers    map[string]string
-	Body       json.RawMessage
-}
-
-type options struct {
+type options[Resp any] struct {
 	resources    []Resource
-	errorHandler func(error) (HTTPResponse, error)
+	errorHandler func(error) (Resp, error)
 }
 
-func defaultOpts() options {
-	return options{
+func defaultOpts[Resp any]() options[Resp] {
+	return options[Resp]{
 		resources:    make([]Resource, 0),
-		errorHandler: DefaultErrorHandler,
+		errorHandler: nil,
 	}
 }
 
-type Option func(*options)
+type Option[Resp any] func(*options[Resp])
 
 // WithResources is an option that allows you to pass resources to the lambda function.
-func WithResources(r ...Resource) Option {
-	return func(o *options) {
+func WithResources[Resp any](r ...Resource) Option[Resp] {
+	return func(o *options[Resp]) {
 		o.resources = append(o.resources, r...)
 	}
 }
 
 // WithErrorHandler is an option that allows you to pass a custom error handler to the lambda function.
-func WithErrorHandler(h func(error) (HTTPResponse, error)) Option {
-	return func(o *options) {
+func WithErrorHandler[Resp any](h func(error) (Resp, error)) Option[Resp] {
+	return func(o *options[Resp]) {
 		o.errorHandler = h
 	}
-}
-
-var DefaultErrorHandler = func(err error) (HTTPResponse, error) {
-	e, mErr := json.Marshal(err.Error())
-	if mErr != nil {
-		return HTTPResponse{
-			StatusCode: http.StatusInternalServerError,
-			Body:       []byte(`"failed to marshal error"`),
-		}, mErr
-
-	}
-	return HTTPResponse{
-		StatusCode: http.StatusInternalServerError,
-		Body:       e,
-	}, nil
 }

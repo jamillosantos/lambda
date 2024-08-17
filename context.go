@@ -1,38 +1,27 @@
 package lambda
 
-import (
-	"context"
-)
+import "context"
 
 // None is an empty struct used when we are not interested on the request or response body.
 type None struct{}
 
-type Context[Req any, Resp any] struct {
-	Context  context.Context
-	Request  *Request[Req]
-	Response *Response[Resp]
-	Locals   map[string]any
-	error    error
+type Context[Req any] struct {
+	Context context.Context
+	Request Req
+	Locals  map[string]any
 }
 
-func (l *Context[Req, Resp]) Error() string {
-	if l.error != nil {
-		return l.error.Error()
-	}
-	return ""
-}
-
-func (l *Context[Req, Resp]) SetLocal(key string, value any) *Context[Req, Resp] {
+func (l *Context[Req]) SetLocal(key string, value any) *Context[Req] {
 	l.Locals[key] = value
 	return l
 }
 
-func (l *Context[Req, Resp]) GetLocal(key string) (any, bool) {
+func (l *Context[Req]) GetLocal(key string) (any, bool) {
 	value, ok := l.Locals[key]
 	return value, ok
 }
 
-func (l *Context[Req, Resp]) UnsetLocal(key string) *Context[Req, Resp] {
+func (l *Context[Req]) UnsetLocal(key string) *Context[Req] {
 	delete(l.Locals, key)
 	return l
 }

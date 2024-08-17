@@ -1,4 +1,4 @@
-package lambda
+package http
 
 import (
 	"context"
@@ -27,7 +27,7 @@ type APIGatewayV2HTTPResponse struct {
 // StartV2 will start the lambda function with the given handler and options.
 //
 // The handler is a function that receives a context and a pointer to a Context.
-func StartV2[Req any, Resp any](handler Handler[Req, Resp], opts ...Option) {
+func StartV2[Req any, Resp any](handler Handler[Req, Resp], opts ...HttpOption) {
 	c := defaultOpts()
 	for _, o := range opts {
 		o(&c)
@@ -96,7 +96,7 @@ func toCookieString(cookies []Cookie) []string {
 	return cookieStrings
 }
 
-func toV2Response(response HTTPResponse, err error) (APIGatewayV2HTTPResponse, error) {
+func toV2Response(response HttpResponse, err error) (APIGatewayV2HTTPResponse, error) {
 	if err != nil {
 		return APIGatewayV2HTTPResponse{}, err
 	}
