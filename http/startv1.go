@@ -55,7 +55,7 @@ func StartV1[Req any, Resp any](handler Handler[Req, Resp], opts ...HttpOption) 
 		// For the string -> []byte we need to use a more effective way. For now, let's keep the naive approach.
 		err := populateLambdaContextV1(&gatewayReq, &lambdaContext)
 		if err != nil {
-			return toV1Response(c.errorHandler(err))
+			return toV1Response(c.errorHandler(ctx, err))
 		}
 
 		err = handler(&lambdaContext)
@@ -63,7 +63,7 @@ func StartV1[Req any, Resp any](handler Handler[Req, Resp], opts ...HttpOption) 
 			lambdaContext.error = err
 		}
 		if lambdaContext.Response.Err != nil {
-			return toV1Response(c.errorHandler(lambdaContext.Response.Err))
+			return toV1Response(c.errorHandler(ctx, lambdaContext.Response.Err))
 		}
 
 		// lambdaContext.Response.Headers["Set-Cookie"] = strings.Join(lo, "; ")

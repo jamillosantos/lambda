@@ -65,7 +65,7 @@ func StartV2[Req any, Resp any](handler Handler[Req, Resp], opts ...HttpOption) 
 		// For the string -> []byte we need to use a more effective way. For now, let's keep the naive approach.
 		err := populateLambdaContextV2(&gatewayReq, &lambdaContext)
 		if err != nil {
-			return toV2Response(c.errorHandler(err))
+			return toV2Response(c.errorHandler(ctx, err))
 		}
 
 		err = handler(&lambdaContext)
@@ -73,7 +73,7 @@ func StartV2[Req any, Resp any](handler Handler[Req, Resp], opts ...HttpOption) 
 			lambdaContext.error = err
 		}
 		if lambdaContext.Response.Err != nil {
-			return toV2Response(c.errorHandler(lambdaContext.Response.Err))
+			return toV2Response(c.errorHandler(ctx, lambdaContext.Response.Err))
 		}
 
 		r := APIGatewayV2HTTPResponse{

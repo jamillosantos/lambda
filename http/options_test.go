@@ -10,7 +10,7 @@ import (
 
 func TestWithErrorHandler(t *testing.T) {
 	o := options{}
-	h := func(err error) (HttpResponse, error) {
+	h := func(_ context.Context, err error) (HttpResponse, error) {
 		return HttpResponse{}, nil
 	}
 	WithErrorHandler(h)(&o)
