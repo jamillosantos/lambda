@@ -4,8 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	lambdahttp "github.com/jamillosantos/lambda/http"
 	"net/http"
+
+	lambdahttp "github.com/jamillosantos/lambda/http"
 )
 
 type TestHttpContext[Req any, Resp any] struct {
@@ -23,6 +24,7 @@ func (t *TestHttpContext[Req, Resp]) ResponseBody() (Resp, error) {
 
 func Run[Req any, Resp any](handler lambdahttp.Handler[Req, Resp], opts ...Option) (*TestHttpContext[Req, Resp], error) {
 	o := options{
+		ctx:        context.Background(),
 		httpMethod: "GET",
 		path:       "/",
 		pathParams: make(map[string]string),
@@ -36,7 +38,7 @@ func Run[Req any, Resp any](handler lambdahttp.Handler[Req, Resp], opts ...Optio
 	}
 	ctx := &TestHttpContext[Req, Resp]{
 		lambdahttp.Context[Req, Resp]{
-			Context: context.Background(),
+			Context: o.ctx,
 			Request: &lambdahttp.Request[Req]{
 				HTTPMethod: o.httpMethod,
 				Path:       o.path,
